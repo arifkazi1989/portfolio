@@ -1,10 +1,17 @@
 import { client } from '@/sanity/client'
 import { PortableText } from '@portabletext/react'
 import imageUrlBuilder from '@sanity/image-url'
+import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+})
 
 const builder = imageUrlBuilder(client)
 
@@ -18,6 +25,37 @@ const getImageUrl = (source: any) => {
   } catch {
     return null
   }
+}
+
+const isCompactImage = (value: any) => {
+  if (!value || typeof value !== 'object') return false
+
+  const booleanKeys = ['compact', 'isCompact', 'small', 'isSmall', 'narrow']
+  for (const key of booleanKeys) {
+    if (value[key] === true) return true
+  }
+
+  const stringKeys = ['size', 'layout', 'width', 'widthMode', 'display', 'variant', 'style']
+  for (const key of stringKeys) {
+    const raw = value[key]
+    if (typeof raw === 'string') {
+      const normalized = raw.trim().toLowerCase()
+      if (['compact', 'small', 'narrow', 'mobile', 'portrait'].includes(normalized)) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
+const formatMetaValue = (val: any): string | null => {
+  if (!val) return null
+  if (Array.isArray(val)) {
+    const joined = val.filter(Boolean).join(', ')
+    return joined || null
+  }
+  return String(val)
 }
 
 const getCaseStudyData = async (slug: string) => {
@@ -36,8 +74,10 @@ const getCaseStudyData = async (slug: string) => {
       client,
       company,
       industry,
+      sector,
       role,
       platform,
+      platforms,
       period,
       tags,
       "thumbnailUrl": coalesce(thumbnail.asset->url, mainImage.asset->url),
@@ -66,14 +106,26 @@ const portableTextComponents = {
     image: ({ value }: any) => {
       const src = getImageUrl(value)
       if (!src) return null
+      const compact = isCompactImage(value)
+
       return (
-        <figure style={{ margin: '1.75rem 0' }}>
+        <figure
+          style={{
+            margin: '2rem auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
           <img
             src={src}
             alt={value?.alt || value?.caption || 'Case study visual'}
             style={{
               display: 'block',
-              width: '100%',
+              margin: '0 auto',
+              width: compact ? 'auto' : '100%',
+              maxWidth: compact ? '21rem' : '100%',
+              maxHeight: compact ? '31rem' : 'none',
               height: 'auto',
               borderRadius: '0.5rem',
             }}
@@ -81,10 +133,11 @@ const portableTextComponents = {
           {value?.caption && (
             <figcaption
               style={{
-                marginTop: '0.6rem',
-                fontSize: '0.8rem',
+                marginTop: '0.65rem',
+                fontSize: '0.88rem',
                 color: '#8f8880',
                 lineHeight: 1.5,
+                textAlign: 'center',
               }}
             >
               {value.caption}
@@ -98,12 +151,12 @@ const portableTextComponents = {
     h1: ({ children }: any) => (
       <h2
         style={{
-          fontSize: '1.5rem',
-          fontWeight: 700,
-          color: '#f5f2ed',
+          fontSize: '1.7rem',
+          fontWeight: 600,
+          color: '#F0EDE7',
           letterSpacing: '-0.02em',
           lineHeight: 1.3,
-          margin: '2.25rem 0 0.85rem',
+          margin: '2.4rem 0 0.8rem',
         }}
       >
         {children}
@@ -112,12 +165,12 @@ const portableTextComponents = {
     h2: ({ children }: any) => (
       <h2
         style={{
-          fontSize: '1.4rem',
-          fontWeight: 700,
-          color: '#f5f2ed',
+          fontSize: '1.6rem',
+          fontWeight: 600,
+          color: '#F0EDE7',
           letterSpacing: '-0.02em',
           lineHeight: 1.3,
-          margin: '2.25rem 0 0.8rem',
+          margin: '2.25rem 0 0.75rem',
         }}
       >
         {children}
@@ -126,9 +179,9 @@ const portableTextComponents = {
     h3: ({ children }: any) => (
       <h3
         style={{
-          fontSize: '1.05rem',
+          fontSize: '1.18rem',
           fontWeight: 600,
-          color: '#e8e2da',
+          color: '#F0EDE7',
           lineHeight: 1.45,
           margin: '1.35rem 0 0.5rem',
         }}
@@ -139,10 +192,10 @@ const portableTextComponents = {
     normal: ({ children }: any) => (
       <p
         style={{
-          fontSize: '0.96rem',
-          color: '#c7c0b7',
-          lineHeight: 1.75,
-          margin: '0 0 1rem',
+          fontSize: '1.06rem',
+          color: '#d8d2ca',
+          lineHeight: 1.65,
+          margin: '0 0 0.95rem',
         }}
       >
         {children}
@@ -154,10 +207,10 @@ const portableTextComponents = {
           margin: '1.5rem 0',
           padding: '0.2rem 0 0.2rem 1.15rem',
           borderLeft: '3px solid #9e978f',
-          color: '#d8d1c8',
-          fontSize: '0.95rem',
+          color: '#dcd6ce',
+          fontSize: '1.06rem',
           fontStyle: 'italic',
-          lineHeight: 1.7,
+          lineHeight: 1.65,
         }}
       >
         {children}
@@ -168,14 +221,14 @@ const portableTextComponents = {
     bullet: ({ children }: any) => (
       <ul
         style={{
-          margin: '0.35rem 0 1.25rem',
-          paddingLeft: '1.35rem',
-          color: '#c7c0b7',
-          fontSize: '0.95rem',
-          lineHeight: 1.72,
+          margin: '0.35rem 0 1.2rem',
+          paddingLeft: '1.4rem',
+          color: '#d8d2ca',
+          fontSize: '1.04rem',
+          lineHeight: 1.62,
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.45rem',
+          gap: '0.42rem',
         }}
       >
         {children}
@@ -184,14 +237,14 @@ const portableTextComponents = {
     number: ({ children }: any) => (
       <ol
         style={{
-          margin: '0.35rem 0 1.25rem',
-          paddingLeft: '1.35rem',
-          color: '#c7c0b7',
-          fontSize: '0.95rem',
-          lineHeight: 1.72,
+          margin: '0.35rem 0 1.2rem',
+          paddingLeft: '1.4rem',
+          color: '#d8d2ca',
+          fontSize: '1.04rem',
+          lineHeight: 1.62,
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.45rem',
+          gap: '0.42rem',
         }}
       >
         {children}
@@ -200,7 +253,7 @@ const portableTextComponents = {
   },
   marks: {
     strong: ({ children }: any) => (
-      <strong style={{ color: '#f5f2ed', fontWeight: 600 }}>{children}</strong>
+      <strong style={{ color: '#F0EDE7', fontWeight: 600 }}>{children}</strong>
     ),
     link: ({ value, children }: any) => {
       const href = value?.href || '#'
@@ -211,7 +264,7 @@ const portableTextComponents = {
           target={isExternal ? '_blank' : undefined}
           rel={isExternal ? 'noopener noreferrer' : undefined}
           style={{
-            color: '#f5f2ed',
+            color: '#F0EDE7',
             textDecoration: 'underline',
             textUnderlineOffset: '3px',
             textDecorationColor: 'rgba(255, 255, 255, 0.35)',
@@ -246,41 +299,62 @@ export default async function CaseStudyPage({
       : project.description || '')
 
   const metaColumns = [
-    { label: 'CLIENT', value: project.client || project.company },
-    { label: 'INDUSTRY', value: project.industry },
-    { label: 'ROLE', value: project.role },
-    { label: 'PLATFORM', value: project.platform || project.period },
-  ].filter((col) => Boolean(col.value)) as { label: string; value: string }[]
+    {
+      label: 'CLIENT',
+      value: formatMetaValue(project.client || project.company),
+    },
+    {
+      label: 'INDUSTRY',
+      value: formatMetaValue(project.industry || project.sector),
+    },
+    {
+      label: 'ROLE',
+      value: formatMetaValue(project.role),
+    },
+    {
+      label: 'PLATFORM',
+      value: formatMetaValue(project.platform || project.platforms),
+    },
+  ].filter((col): col is { label: string; value: string } => Boolean(col.value))
 
   const email = homepage?.email || 'arifkazi1989@gmail.com'
   const phone = homepage?.phone || '+91 7045045899'
 
   return (
     <div
+      className={inter.className}
       style={{
         backgroundColor: '#161412',
-        color: '#f3f1ed',
+        color: '#F0EDE7',
         minHeight: '100vh',
-        padding: '1.75rem 1.25rem 4.5rem',
+        padding: '0 2rem 5rem',
       }}
     >
       <style>{`
+        .df-header-wrap {
+          border-bottom: 1px solid #262220;
+          margin-bottom: 2.5rem;
+        }
         .df-top-nav {
           max-width: 56rem;
-          margin: 0 auto 2.25rem;
+          margin: 0 auto;
+          padding: 1.35rem 0;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          font-size: 0.85rem;
+          font-size: 0.92rem;
           color: #a8a198;
         }
         .df-top-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
           color: #a8a198;
           text-decoration: none;
           transition: color 180ms ease;
         }
         .df-top-link:hover {
-          color: #f5f2ed;
+          color: #F0EDE7;
         }
         .df-container {
           max-width: 46rem;
@@ -291,9 +365,9 @@ export default async function CaseStudyPage({
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 1.25rem 1.5rem;
           padding: 1.75rem 0;
-          border-top: 1px solid #2b2724;
           border-bottom: 1px solid #2b2724;
-          margin-top: 2rem;
+          margin-top: 1.75rem;
+          margin-bottom: 1.5rem;
         }
         @media (min-width: 640px) {
           .df-meta-grid {
@@ -304,20 +378,20 @@ export default async function CaseStudyPage({
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          gap: 0.75rem;
-          margin-top: 1.5rem;
+          gap: 0.85rem;
+          margin-top: 1.6rem;
         }
         .df-cta-btn {
           display: inline-flex;
           align-items: center;
           gap: 0.65rem;
-          padding: 0.7rem 1.25rem;
+          padding: 0.75rem 1.35rem;
           border-radius: 0.5rem;
           background-color: #221f1d;
           border: 1px solid #35302d;
           color: #e6e0d8;
           text-decoration: none;
-          font-size: 0.85rem;
+          font-size: 0.92rem;
           font-weight: 500;
           transition: border-color 180ms ease, background-color 180ms ease;
         }
@@ -327,24 +401,40 @@ export default async function CaseStudyPage({
         }
       `}</style>
 
-      <header className="df-top-nav">
-        <Link href="/" className="df-top-link">
-          {'< Go Back'}
-        </Link>
-        <Link href="/#projects" className="df-top-link">
-          Work
-        </Link>
-      </header>
+      <div className="df-header-wrap">
+        <header className="df-top-nav">
+          <Link href="/" className="df-top-link">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            <span>Go Back</span>
+          </Link>
+          <Link href="/#projects" className="df-top-link">
+            Work
+          </Link>
+        </header>
+      </div>
 
       <main className="df-container">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           <h1
             style={{
-              fontSize: 'clamp(1.75rem, 3.5vw, 2.35rem)',
-              fontWeight: 700,
-              color: '#f5f2ed',
-              letterSpacing: '-0.025em',
-              lineHeight: 1.2,
+              fontFamily: inter.style.fontFamily,
+              fontSize: '28px',
+              fontWeight: 600,
+              color: '#F0EDE7',
+              letterSpacing: '-0.56px',
+              lineHeight: '35px',
               margin: 0,
             }}
           >
@@ -353,9 +443,9 @@ export default async function CaseStudyPage({
           {subtitleText && (
             <p
               style={{
-                fontSize: '0.92rem',
+                fontSize: '1.02rem',
                 color: '#a8a198',
-                lineHeight: 1.5,
+                lineHeight: 1.55,
                 margin: 0,
               }}
             >
@@ -370,9 +460,10 @@ export default async function CaseStudyPage({
             alt={project.title}
             style={{
               display: 'block',
+              margin: '1.85rem auto 0',
               width: '100%',
+              maxWidth: '100%',
               height: 'auto',
-              marginTop: '1.75rem',
               borderRadius: '0.5rem',
             }}
           />
@@ -384,7 +475,7 @@ export default async function CaseStudyPage({
               <div key={col.label} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <span
                   style={{
-                    fontSize: '0.68rem',
+                    fontSize: '0.74rem',
                     fontWeight: 600,
                     letterSpacing: '0.09em',
                     color: '#8f8880',
@@ -395,7 +486,7 @@ export default async function CaseStudyPage({
                 </span>
                 <span
                   style={{
-                    fontSize: '0.9rem',
+                    fontSize: '1rem',
                     fontWeight: 600,
                     color: '#e8e2da',
                     lineHeight: 1.4,
@@ -415,11 +506,11 @@ export default async function CaseStudyPage({
             ) : (
               <p
                 style={{
-                  fontSize: '0.96rem',
-                  color: '#c7c0b7',
-                  lineHeight: 1.75,
+                  fontSize: '1.06rem',
+                  color: '#d8d2ca',
+                  lineHeight: 1.65,
                   whiteSpace: 'pre-line',
-                  margin: '1.5rem 0',
+                  margin: '1.25rem 0',
                 }}
               >
                 {String(richContent)}
@@ -432,7 +523,7 @@ export default async function CaseStudyPage({
           style={{
             border: 'none',
             borderTop: '1px solid #2b2724',
-            margin: '3rem 0 3.25rem',
+            margin: '3.25rem 0 3.25rem',
           }}
         />
 
@@ -441,7 +532,7 @@ export default async function CaseStudyPage({
             style={{
               fontFamily: 'Georgia, "Times New Roman", serif',
               fontStyle: 'italic',
-              fontSize: '1.15rem',
+              fontSize: '1.25rem',
               color: '#cfc8be',
               marginBottom: '0.85rem',
             }}
@@ -450,9 +541,9 @@ export default async function CaseStudyPage({
           </div>
           <h2
             style={{
-              fontSize: 'clamp(1.4rem, 3vw, 1.85rem)',
-              fontWeight: 700,
-              color: '#f5f2ed',
+              fontSize: 'clamp(1.6rem, 3.2vw, 2.1rem)',
+              fontWeight: 600,
+              color: '#F0EDE7',
               letterSpacing: '-0.02em',
               lineHeight: 1.25,
               margin: 0,

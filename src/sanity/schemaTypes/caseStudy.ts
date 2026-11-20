@@ -55,33 +55,19 @@ export const caseStudy = {
         type: 'string',
       },
       {
+        name: 'industry',
+        title: 'Industry',
+        type: 'string',
+      },
+      {
         name: 'role',
         title: 'Your Role',
         type: 'string',
       },
       {
-        name: 'timeline',
-        title: 'Timeline',
+        name: 'platform',
+        title: 'Platform',
         type: 'string',
-      },
-      {
-        name: 'metrics',
-        title: 'Impact Metrics',
-        type: 'array',
-        of: [
-          {
-            type: 'object',
-            fields: [
-              { name: 'stat', title: 'Stat (e.g., +16%)', type: 'string' },
-              { name: 'label', title: 'Label (e.g., App Conversion)', type: 'string' },
-            ],
-          },
-        ],
-      },
-      {
-        name: 'figmaUrl',
-        title: 'Figma Prototype Embed URL',
-        type: 'url',
       },
       {
         name: 'body',
