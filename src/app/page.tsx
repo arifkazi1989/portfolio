@@ -94,6 +94,35 @@ export default async function Home() {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
+        .project-card {
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          gap: 0.85rem;
+          min-width: 0;
+        }
+        .project-thumb-wrap {
+          position: relative;
+          aspect-ratio: 16/10;
+          width: 100%;
+          border-radius: 0.875rem;
+          overflow: hidden;
+          background-color: #2d2926;
+          border: 1px solid #36312e;
+          transition: border-color 220ms ease;
+        }
+        .project-thumb-img {
+          object-fit: cover;
+          transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .project-card:hover .project-thumb-wrap,
+        .project-card:focus-visible .project-thumb-wrap {
+          border-color: rgba(255, 255, 255, 0.28);
+        }
+        .project-card:hover .project-thumb-img,
+        .project-card:focus-visible .project-thumb-img {
+          transform: scale(1.04);
+        }
       `}</style>
 
       <div style={{ maxWidth: '52rem', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -187,7 +216,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* 2. Projects Section Card (1-Column on Mobile, 2-Column on Desktop) */}
+        {/* 2. Projects Section Card */}
         <section style={{ backgroundColor: '#221f1d', borderRadius: '1.25rem', border: '1px solid #302c29', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <h2 style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', color: '#9e978f', textTransform: 'uppercase', margin: 0 }}>
             PROJECTS
@@ -198,15 +227,15 @@ export default async function Home() {
               <Link
                 key={project.slug.current}
                 href={`/projects/${project.slug.current}`}
-                style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '0.85rem', minWidth: 0 }}
+                className="project-card"
               >
-                <div style={{ position: 'relative', aspectRatio: '16/10', width: '100%', borderRadius: '0.875rem', overflow: 'hidden', backgroundColor: '#2d2926', border: '1px solid #36312e' }}>
+                <div className="project-thumb-wrap">
                   {project.thumbnailUrl && (
                     <Image
                       src={project.thumbnailUrl}
                       alt={project.title}
                       fill
-                      style={{ objectFit: 'cover' }}
+                      className="project-thumb-img"
                     />
                   )}
                 </div>
