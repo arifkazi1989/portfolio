@@ -206,7 +206,7 @@ export default async function Home() {
                     {project.title}
                   </h3>
                   <div style={{ fontSize: '0.8rem', color: '#9e978f' }}>
-                    {[project.company, project.role].filter(Boolean).join(' • ') || project.description}
+                    {project.description || [project.company, project.role].filter(Boolean).join(' • ')}
                   </div>
                 </div>
               </Link>
