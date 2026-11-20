@@ -84,6 +84,16 @@ export default async function Home() {
         .skills-marquee-wrapper:hover .skills-marquee-track {
           animation-play-state: paused;
         }
+        .projects-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+          .projects-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
       `}</style>
 
       <div style={{ maxWidth: '52rem', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -177,18 +187,18 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* 2. Projects Section Card (2-Column Grid) */}
+        {/* 2. Projects Section Card (1-Column on Mobile, 2-Column on Desktop) */}
         <section style={{ backgroundColor: '#221f1d', borderRadius: '1.25rem', border: '1px solid #302c29', padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <h2 style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.08em', color: '#9e978f', textTransform: 'uppercase', margin: 0 }}>
             PROJECTS
           </h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1.5rem' }}>
+          <div className="projects-grid">
             {projects?.map((project: any) => (
               <Link
                 key={project.slug.current}
                 href={`/projects/${project.slug.current}`}
-                style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}
+                style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', gap: '0.85rem', minWidth: 0 }}
               >
                 <div style={{ position: 'relative', aspectRatio: '16/10', width: '100%', borderRadius: '0.875rem', overflow: 'hidden', backgroundColor: '#2d2926', border: '1px solid #36312e' }}>
                   {project.thumbnailUrl && (

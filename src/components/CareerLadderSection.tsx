@@ -2,21 +2,40 @@
 
 import { useState } from 'react'
 
-interface CareerItem {
+export interface CareerEntry {
   role?: string
   company?: string
   period?: string
   description?: string
 }
 
-interface CareerLadderSectionProps {
-  items?: CareerItem[]
+function ContinuousLadder() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        width: '1.35rem',
+        flexShrink: 0,
+        alignSelf: 'stretch',
+        marginTop: '0.45rem',
+        marginBottom: '0.45rem',
+        borderLeft: '2px solid #38322d',
+        borderRight: '2px solid #38322d',
+        backgroundImage: 'repeating-linear-gradient(to bottom, transparent 0px, transparent 16px, #38322d 16px, #38322d 18px)',
+        backgroundPosition: 'top left',
+      }}
+    />
+  )
 }
 
-export default function CareerLadderSection({ items = [] }: CareerLadderSectionProps) {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+export default function CareerLadderSection({ items }: { items: CareerEntry[] }) {
+  const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({})
 
   if (!items || items.length === 0) return null
+
+  const toggleItem = (idx: number) => {
+    setExpandedMap((prev) => ({ ...prev, [idx]: !prev[idx] }))
+  }
 
   return (
     <section
@@ -27,9 +46,30 @@ export default function CareerLadderSection({ items = [] }: CareerLadderSectionP
         padding: '1.75rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1.5rem',
+        gap: '1.25rem',
       }}
     >
+      <style>{`
+        .career-entry-card {
+          background-color: transparent;
+          border: 1px solid transparent;
+          border-radius: 0.95rem;
+          padding: 0.9rem 1rem;
+          transition: background-color 180ms ease, border-color 180ms ease;
+          cursor: pointer;
+        }
+        .career-entry-card:hover,
+        .career-entry-card:focus-visible {
+          background-color: #2b2724;
+          border-color: #423b36;
+          outline: none;
+        }
+        .career-entry-card:hover .career-toggle-label,
+        .career-entry-card:focus-visible .career-toggle-label {
+          color: #e6dfd7;
+        }
+      `}</style>
+
       <h2
         style={{
           fontSize: '0.75rem',
@@ -43,55 +83,52 @@ export default function CareerLadderSection({ items = [] }: CareerLadderSectionP
         CAREER LADDER
       </h2>
 
-      <div style={{ display: 'flex', gap: '1.5rem', position: 'relative' }}>
-        {/* Left Vertical Ladder Graphic */}
-        <div
-          aria-hidden="true"
-          style={{
-            width: '1.5rem',
-            flexShrink: 0,
-            borderLeft: '2px solid #3d3834',
-            borderRight: '2px solid #3d3834',
-            backgroundImage:
-              'repeating-linear-gradient(to bottom, transparent 0px, transparent 18px, #3d3834 18px, #3d3834 20px)',
-            marginTop: '0.25rem',
-            marginBottom: '0.25rem',
-          }}
-        />
+      <div style={{ display: 'flex', alignItems: 'stretch', gap: '0.9rem' }}>
+        <ContinuousLadder />
 
-        {/* Right Career Entries */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           {items.map((item, idx) => {
-            const isExpanded = expandedIndex === idx
-            const text = item.description?.trim() || ''
-            const canExpand = text.length > 140 || text.includes('\n')
+            const isExpanded = !!expandedMap[idx]
+            const heading = [item.role, item.company].filter(Boolean).join(' @ ')
 
             return (
-              <div key={`${item.company}-${idx}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {/* Header Row: Role @ Company + Date Pill */}
+              <div
+                key={`${heading}-${idx}`}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                onClick={() => toggleItem(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    toggleItem(idx)
+                  }
+                }}
+                className="career-entry-card"
+              >
                 <div
                   style={{
                     display: 'flex',
-                    justifyContent: 'space-between',
                     alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.75rem',
                     flexWrap: 'wrap',
-                    gap: '0.5rem',
                   }}
                 >
-                  <h3 style={{ fontSize: '0.975rem', fontWeight: 600, color: '#f3f1ed', margin: 0 }}>
-                    {[item.role, item.company].filter(Boolean).join(' @ ')}
-                  </h3>
+                  <div style={{ fontSize: '1rem', fontWeight: 600, color: '#f3f1ed' }}>
+                    {heading}
+                  </div>
 
                   {item.period && (
                     <span
                       style={{
-                        backgroundColor: '#2c2825',
-                        border: '1px solid #3a3531',
+                        fontSize: '0.75rem',
                         color: '#b5aea6',
-                        fontSize: '0.72rem',
-                        fontWeight: 500,
-                        padding: '0.25rem 0.65rem',
+                        backgroundColor: '#2d2926',
+                        border: '1px solid #3c3632',
                         borderRadius: '999px',
+                        padding: '0.2rem 0.65rem',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {item.period}
@@ -99,57 +136,45 @@ export default function CareerLadderSection({ items = [] }: CareerLadderSectionP
                   )}
                 </div>
 
-                {/* Single Description (Clamped to 2 lines until expanded) */}
-                {text && (
-                  <p
-                    style={
-                      isExpanded
-                        ? {
-                            fontSize: '0.875rem',
-                            color: '#b5aea6',
-                            lineHeight: 1.65,
-                            margin: 0,
-                            whiteSpace: 'pre-line',
-                          }
-                        : {
-                            fontSize: '0.875rem',
-                            color: '#a8a199',
-                            lineHeight: 1.6,
-                            margin: 0,
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                          }
-                    }
-                  >
-                    {text}
-                  </p>
-                )}
+                {item.description && (
+                  <>
+                    <p
+                      style={{
+                        margin: '0.55rem 0 0',
+                        fontSize: '0.875rem',
+                        lineHeight: 1.65,
+                        color: '#b5aea6',
+                        whiteSpace: isExpanded ? 'pre-line' : 'normal',
+                        ...(isExpanded
+                          ? {}
+                          : {
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden',
+                            }),
+                      }}
+                    >
+                      {item.description}
+                    </p>
 
-                {/* View More / View Less Toggle */}
-                {canExpand && (
-                  <button
-                    type="button"
-                    onClick={() => setExpandedIndex(isExpanded ? null : idx)}
-                    style={{
-                      alignSelf: 'flex-start',
-                      background: 'none',
-                      border: 'none',
-                      padding: 0,
-                      color: '#9e978f',
-                      fontSize: '0.78rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.3rem',
-                      marginTop: '0.15rem',
-                    }}
-                  >
-                    <span>{isExpanded ? 'View less' : 'View more'}</span>
-                    <span style={{ fontSize: '0.7rem' }}>{isExpanded ? '▴' : '▾'}</span>
-                  </button>
+                    <span
+                      className="career-toggle-label"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        marginTop: '0.6rem',
+                        fontSize: '0.8rem',
+                        fontWeight: 500,
+                        color: '#9e978f',
+                        transition: 'color 180ms ease',
+                      }}
+                    >
+                      {isExpanded ? 'View less' : 'View more'}
+                      <span style={{ fontSize: '0.75rem' }}>{isExpanded ? '▴' : '▾'}</span>
+                    </span>
+                  </>
                 )}
               </div>
             )

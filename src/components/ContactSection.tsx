@@ -13,36 +13,27 @@ interface ContactSectionProps {
 export default function ContactSection({
   email = 'arifkazi1989@gmail.com',
   phone = '+91 7045045899',
-  linkedinUrl = 'https://www.linkedin.com',
-  dribbbleUrl = 'https://dribbble.com',
-  mediumUrl = 'https://medium.com',
+  linkedinUrl,
+  dribbbleUrl,
+  mediumUrl,
 }: ContactSectionProps) {
-  const [copiedField, setCopiedField] = useState<'email' | 'phone' | null>(null)
+  const [copiedKey, setCopiedKey] = useState<'email' | 'phone' | null>(null)
 
-  const handleCopy = async (text: string, field: 'email' | 'phone') => {
+  const handleCopy = async (value: string, key: 'email' | 'phone') => {
     try {
-      await navigator.clipboard.writeText(text)
-      setCopiedField(field)
-      setTimeout(() => setCopiedField(null), 2000)
+      await navigator.clipboard.writeText(value)
+      setCopiedKey(key)
+      setTimeout(() => setCopiedKey((prev) => (prev === key ? null : prev)), 1800)
     } catch {
-      // Fallback ignored
+      // Clipboard access denied
     }
   }
 
-  const buttonStyle: React.CSSProperties = {
-    backgroundColor: '#1d1a18',
-    border: '1px solid #302c29',
-    borderRadius: '0.75rem',
-    padding: '0.9rem 1.15rem',
-    color: '#e6e2dc',
-    fontSize: '0.85rem',
-    fontWeight: 500,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    cursor: 'pointer',
-    textDecoration: 'none',
-  }
+  const socialLinks = [
+    { label: 'LinkedIn', href: linkedinUrl },
+    { label: 'Dribbble', href: dribbbleUrl },
+    { label: 'Medium', href: mediumUrl },
+  ].filter((item): item is { label: string; href: string } => Boolean(item.href))
 
   return (
     <section
@@ -53,9 +44,59 @@ export default function ContactSection({
         padding: '1.75rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
+        gap: '1.15rem',
       }}
     >
+      <style>{`
+        .contact-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.7rem;
+        }
+        .contact-btn {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          width: 100%;
+          min-width: 0;
+          padding: 0.85rem 1rem;
+          border-radius: 0.85rem;
+          background-color: #292522;
+          border: 1px solid #38332f;
+          color: #f3f1ed;
+          font-size: 0.9rem;
+          font-weight: 500;
+          text-decoration: none;
+          cursor: pointer;
+          box-sizing: border-box;
+          transition: background-color 160ms ease, border-color 160ms ease;
+        }
+        .contact-btn:hover,
+        .contact-btn:focus-visible {
+          background-color: #312c28;
+          border-color: #4a433d;
+          outline: none;
+        }
+        .contact-btn-label {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .contact-btn-icon {
+          color: #9e978f;
+          flex-shrink: 0;
+          line-height: 1;
+        }
+        @media (min-width: 640px) {
+          .contact-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.75rem;
+          }
+        }
+      `}</style>
+
       <h2
         style={{
           fontSize: '0.75rem',
@@ -69,43 +110,45 @@ export default function ContactSection({
         CONTACT
       </h2>
 
-      {/* Top Row: Copy Mail & Copy Phone */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.75rem' }}>
-        <button
-          type="button"
-          onClick={() => handleCopy(email, 'email')}
-          style={buttonStyle}
-        >
-          <span>{copiedField === 'email' ? 'Copied email!' : 'Copy mail'}</span>
-          <span style={{ color: '#8c857e', fontSize: '0.95rem' }}>@</span>
-        </button>
+      <div className="contact-list">
+        {email && (
+          <button
+            type="button"
+            onClick={() => handleCopy(email, 'email')}
+            className="contact-btn"
+          >
+            <span className="contact-btn-label">
+              {copiedKey === 'email' ? 'Copied mail' : 'Copy mail'}
+            </span>
+            <span className="contact-btn-icon">@</span>
+          </button>
+        )}
 
-        <button
-          type="button"
-          onClick={() => handleCopy(phone, 'phone')}
-          style={buttonStyle}
-        >
-          <span>{copiedField === 'phone' ? 'Copied phone!' : 'Copy phone'}</span>
-          <span style={{ color: '#8c857e', fontSize: '0.95rem' }}>✆</span>
-        </button>
-      </div>
+        {phone && (
+          <button
+            type="button"
+            onClick={() => handleCopy(phone, 'phone')}
+            className="contact-btn"
+          >
+            <span className="contact-btn-label">
+              {copiedKey === 'phone' ? 'Copied phone' : 'Copy phone'}
+            </span>
+            <span className="contact-btn-icon">☎</span>
+          </button>
+        )}
 
-      {/* Bottom Row: Social Links */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.75rem' }}>
-        <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" style={buttonStyle}>
-          <span>LinkedIn</span>
-          <span style={{ color: '#8c857e', fontSize: '0.9rem' }}>↗</span>
-        </a>
-
-        <a href={dribbbleUrl} target="_blank" rel="noopener noreferrer" style={buttonStyle}>
-          <span>Dribbble</span>
-          <span style={{ color: '#8c857e', fontSize: '0.9rem' }}>↗</span>
-        </a>
-
-        <a href={mediumUrl} target="_blank" rel="noopener noreferrer" style={buttonStyle}>
-          <span>Medium</span>
-          <span style={{ color: '#8c857e', fontSize: '0.9rem' }}>↗</span>
-        </a>
+        {socialLinks.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="contact-btn"
+          >
+            <span className="contact-btn-label">{link.label}</span>
+            <span className="contact-btn-icon">↗</span>
+          </a>
+        ))}
       </div>
     </section>
   )
